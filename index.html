@@ -8,17 +8,17 @@
     <!-- Metadaten für die Web-App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1d4ed8">
-    <link rel="manifest" href="manifest.json">
-
-    <!-- Tailwind CDN wurde entfernt -->
+    <meta name="theme-color" content="#1f2937">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNhbmR1aHIgU3RldWVydW5nIiwKICAic2hvcnRfbmFtZSI6ICJTYW5kdWhyIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxZjI5MzciLAogICJ0aGVtZV9jb2xvciI6ICIjMjU2M2ViIiwKICAiZGVzY3JpcHRpb24iOiAiRWluZSBXZWItQXBwIHp1ciBTdGV1ZXJ1bmcgZGVyIEJsdWV0b290aC1TYW5kdWhyLiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vcGxhY2Vob2xkLmNvLzE5MngxOTIvMjU2M2ViL2ZmZmZmZj90ZXh0PVVociIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL3BsYWNlaG9sZC5jby81MTJ4NTEyLzI1NjNlYi9mZmZmZmY/dGV4dD1VaHIiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0K">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Basis-Stile */
+        /* Basis-Stile für Dark Mode */
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
-            background-color: #f1f5f9; /* bg-gray-100 */
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,13 +28,14 @@
 
         /* Haupt-Container für die App */
         .app-container {
-            background-color: white;
-            padding: 2rem; /* p-8 */
-            border-radius: 1rem; /* rounded-2xl */
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* shadow-lg */
+            background-color: #1f2937; /* bg-gray-800 */
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
             width: 100%;
-            max-width: 28rem; /* max-w-md */
-            margin: 1rem; /* mx-4 */
+            max-width: 28rem;
+            margin: 1rem;
+            border: 1px solid #374151; /* border-gray-700 */
         }
 
         .text-center { text-align: center; }
@@ -44,34 +45,29 @@
         .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
 
         .title {
-            font-size: 1.875rem; /* text-3xl */
+            font-size: 1.875rem;
             line-height: 2.25rem;
-            font-weight: 700; /* font-bold */
-            color: #1f2937; /* text-gray-800 */
+            font-weight: 700;
+            color: #f9fafb; /* text-gray-50 */
         }
         .status-text {
-            color: #6b7280; /* text-gray-500 */
+            color: #9ca3af; /* text-gray-400 */
         }
         .hidden { display: none; }
 
-        .controls-container {
-             display: flex;
-             flex-direction: column;
-        }
-
         .input-group label {
             display: block;
-            font-size: 0.875rem; /* text-sm */
+            font-size: 0.875rem;
             line-height: 1.25rem;
-            font-weight: 500; /* font-medium */
-            color: #374151; /* text-gray-700 */
+            font-weight: 500;
+            color: #d1d5db; /* text-gray-300 */
         }
 
-        /* Eigene CSS-Klassen, die Tailwind @apply ersetzen */
+        /* Eigene CSS-Klassen für Dark Mode */
         .btn {
-            padding: 0.75rem 1.5rem; /* px-6 py-3 */
-            border-radius: 0.5rem; /* rounded-lg */
-            font-weight: 600; /* font-semibold */
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
             color: white;
             transition: transform 0.2s ease-in-out, background-color 0.2s;
             width: 100%;
@@ -79,37 +75,43 @@
             cursor: pointer;
         }
         .btn-primary {
-            background-color: #1d4ed8; /* bg-blue-700 */
+            background-color: #2563eb; /* bg-blue-600 */
         }
         .btn-primary:hover {
-            background-color: #1e40af; /* hover:bg-blue-800 */
+            background-color: #1d4ed8; /* hover:bg-blue-700 */
         }
         .btn-secondary {
-            background-color: #6b7280; /* bg-gray-500 */
+            background-color: #4b5563; /* bg-gray-600 */
         }
         .btn-secondary:hover {
-            background-color: #4b5563; /* hover:bg-gray-600 */
+            background-color: #374151; /* hover:bg-gray-700 */
         }
         .btn:active {
             transform: scale(0.95);
         }
         .btn:disabled {
-            background-color: #d1d5db; /* bg-gray-300 */
+            background-color: #374151; /* bg-gray-700 */
+            color: #9ca3af; /* text-gray-400 */
             cursor: not-allowed;
         }
         .input-field {
-            margin-top: 0.25rem; /* mt-1 */
+            margin-top: 0.25rem;
             display: block;
             width: 100%;
-            padding: 0.75rem 1rem; /* px-4 py-3 */
-            border: 1px solid #d1d5db; /* border-gray-300 */
-            border-radius: 0.5rem; /* rounded-lg */
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
-            font-size: 0.875rem; /* sm:text-sm */
+            padding: 0.75rem 1rem;
+            border: 1px solid #4b5563; /* border-gray-600 */
+            background-color: #374151; /* bg-gray-700 */
+            color: #f9fafb; /* text-gray-50 */
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            font-size: 0.875rem;
             line-height: 1.25rem;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+        }
+        .input-field::placeholder {
+            color: #9ca3af; /* placeholder-gray-400 */
         }
         .input-field:focus {
             outline: 2px solid transparent;
@@ -208,7 +210,7 @@
                     await dauerCharacteristic.startNotifications();
                     dauerCharacteristic.addEventListener('characteristicvaluechanged', handleDauerChanged);
                     
-                    statusText.textContent = 'Verbunden! Empfange Daten...';
+                    statusText.textContent = 'Verbunden! Warte auf Werte...';
                     connectButton.classList.add('hidden');
                     controlsDiv.classList.remove('hidden');
 
@@ -226,13 +228,8 @@
                 bleDevice = null;
             }
 
-            // NEU: Event-Listener, um die Verbindung beim Schließen der Seite zu trennen.
             window.addEventListener('beforeunload', () => {
-                if (!bleDevice) {
-                    return;
-                }
-                if (bleDevice.gatt.connected) {
-                    console.log('Seite wird geschlossen, trenne Bluetooth-Verbindung...');
+                if (bleDevice && bleDevice.gatt.connected) {
                     bleDevice.gatt.disconnect();
                 }
             });
