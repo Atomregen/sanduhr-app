@@ -9,8 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1f2937">
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNhbmR1aHIgU3RldWVydW5nIiwKICAic2hvcnRfbmFtZSI6ICJTYW5kdWhyIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxZjI5MzciLAogICJ0aGVtZV9jb2xvciI6ICIjMjU2M2ViIiwKICAiZGVzY3JpcHRpb24iOiAiRWluZSBXZWItQXBwIHp1ciBTdGV1ZXJ1bmcgZGVyIEJsdWV0b290aC1TYW5kdWhyLiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vcGxhY2Vob2xkLmNvLzE5MngxOTIvMjU2M2ViL2ZmZmZmZj90ZXh0PVVociIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL3BsYWNlaG9sZC5jby81MTJ4NTEyLzI1NjNlYi9mZmZmZmY/dGV4dD1VaHIiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0K">
-    
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Tailwind CDN wurde entfernt -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         /* Basis-Stile für Dark Mode */
@@ -45,9 +46,9 @@
         .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
 
         .title {
-            font-size: 1.875rem;
+            font-size: 1.875rem; /* text-3xl */
             line-height: 2.25rem;
-            font-weight: 700;
+            font-weight: 700; /* font-bold */
             color: #f9fafb; /* text-gray-50 */
         }
         .status-text {
@@ -57,9 +58,9 @@
 
         .input-group label {
             display: block;
-            font-size: 0.875rem;
+            font-size: 0.875rem; /* text-sm */
             line-height: 1.25rem;
-            font-weight: 500;
+            font-weight: 500; /* font-medium */
             color: #d1d5db; /* text-gray-300 */
         }
 
@@ -175,13 +176,13 @@
 
             function handleAnzahlChanged(event) {
                 const value = event.target.value.getInt32(0, true);
-                console.log(`Anzahl-Notification empfangen: ${value}`);
+                console.log(`Anzahl-Wert empfangen: ${value}`);
                 grainsInput.value = value;
             }
 
             function handleDauerChanged(event) {
                 const value = event.target.value.getInt32(0, true);
-                console.log(`Dauer-Notification empfangen: ${value}`);
+                console.log(`Dauer-Wert empfangen: ${value}`);
                 durationInput.value = value;
             }
 
@@ -209,13 +210,23 @@
                     
                     await dauerCharacteristic.startNotifications();
                     dauerCharacteristic.addEventListener('characteristicvaluechanged', handleDauerChanged);
+
+                    // KORREKTUR: Nach dem Abonnieren aktiv die aktuellen Werte einmalig auslesen.
+                    // Dies behebt die "Race Condition".
+                    statusText.textContent = 'Lese aktuelle Werte...';
+                    const initialAnzahlValue = await anzahlCharacteristic.readValue();
+                    handleAnzahlChanged({ target: { value: initialAnzahlValue } });
+
+                    const initialDauerValue = await dauerCharacteristic.readValue();
+                    handleDauerChanged({ target: { value: initialDauerValue } });
                     
-                    statusText.textContent = 'Verbunden! Warte auf Werte...';
+                    statusText.textContent = 'Verbunden!';
                     connectButton.classList.add('hidden');
                     controlsDiv.classList.remove('hidden');
 
                 } catch (error) {
                     statusText.textContent = `Verbindung fehlgeschlagen`;
+                    console.error('BLE Verbindungsfehler:', error);
                 }
             });
             
