@@ -36,20 +36,25 @@
         <div id="controls" class="hidden mt-8 space-y-6">
             <div>
                 <label for="grains-input" class="block text-sm font-medium text-gray-700">Anzahl der Körner</label>
-                <input type="number" id="grains-input" class="input-field" placeholder="z.B. 60" value="60">
+                <input type="number" id="grains-input" class="input-field" placeholder="z.B. 60">
                 <button id="send-grains-button" class="btn btn-secondary w-full mt-3">Anzahl senden</button>
             </div>
             <div>
                 <label for="duration-input" class="block text-sm font-medium text-gray-700">Dauer in Sekunden</label>
-                <input type="number" id="duration-input" class="input-field" placeholder="z.B. 30" value="30">
+                <input type="number" id="duration-input" class="input-field" placeholder="z.B. 30">
                 <button id="send-duration-button" class="btn btn-secondary w-full mt-3">Dauer senden</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Registriere den Service Worker, wenn der Browser es unterstützt
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(err => console.error('Service Worker registration failed:', err));
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('Service Worker registriert:', registration))
+                    .catch(error => console.log('Service Worker Registrierung fehlgeschlagen:', error));
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -68,6 +73,19 @@
             let anzahlCharacteristic = null;
             let dauerCharacteristic = null;
 
+            // Handler für eingehende Benachrichtigungen
+            function handleAnzahlChanged(event) {
+                const value = event.target.value.getInt32(0, true); // Lese den Wert als 32-bit Integer (Little Endian)
+                console.log(`Anzahl-Notification empfangen: ${value}`);
+                grainsInput.value = value;
+            }
+
+            function handleDauerChanged(event) {
+                const value = event.target.value.getInt32(0, true);
+                console.log(`Dauer-Notification empfangen: ${value}`);
+                durationInput.value = value;
+            }
+
             connectButton.addEventListener('click', async () => {
                 try {
                     statusText.textContent = 'Suche nach Geräten...';
@@ -79,10 +97,19 @@
                     statusText.textContent = 'Verbinde mit Server...';
                     const server = await device.gatt.connect();
                     const service = await server.getPrimaryService(SANDUHR_SERVICE_UUID);
+                    
+                    statusText.textContent = 'Abonniere Benachrichtigungen...';
                     anzahlCharacteristic = await service.getCharacteristic(ANZAHL_CHAR_UUID);
                     dauerCharacteristic = await service.getCharacteristic(DAUER_CHAR_UUID);
                     
-                    statusText.textContent = 'Verbunden!';
+                    // Benachrichtigungen starten und Event Listener hinzufügen
+                    await anzahlCharacteristic.startNotifications();
+                    anzahlCharacteristic.addEventListener('characteristicvaluechanged', handleAnzahlChanged);
+                    
+                    await dauerCharacteristic.startNotifications();
+                    dauerCharacteristic.addEventListener('characteristicvaluechanged', handleDauerChanged);
+                    
+                    statusText.textContent = 'Verbunden! Empfange Daten...';
                     connectButton.classList.add('hidden');
                     controlsDiv.classList.remove('hidden');
 
