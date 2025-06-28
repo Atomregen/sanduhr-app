@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanduhr Steuerung</title>
+    
+    <!-- Metadaten für die Web-App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="manifest" href="manifest.json">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .btn { @apply px-6 py-3 rounded-lg font-semibold text-white transition-transform duration-200 ease-in-out; }
+        .btn-primary { @apply bg-blue-700 hover:bg-blue-800 active:scale-95; }
+        .btn-secondary { @apply bg-gray-500 hover:bg-gray-600 active:scale-95; }
+        .btn:disabled { @apply bg-gray-300 cursor-not-allowed; }
+        .input-field { @apply mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm; }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md mx-4">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Sanduhr Steuerung</h1>
+            <p id="status-text" class="text-gray-500 mt-2">Bereit zum Verbinden</p>
+        </div>
+
+        <div class="mt-8">
+            <button id="connect-button" class="btn btn-primary w-full text-lg">Mit Sanduhr verbinden</button>
+        </div>
+
+        <div id="controls" class="hidden mt-8 space-y-6">
+            <div>
+                <label for="grains-input" class="block text-sm font-medium text-gray-700">Anzahl der Körner</label>
+                <input type="number" id="grains-input" class="input-field" placeholder="z.B. 60" value="60">
+                <button id="send-grains-button" class="btn btn-secondary w-full mt-3">Anzahl senden</button>
+            </div>
+            <div>
+                <label for="duration-input" class="block text-sm font-medium text-gray-700">Dauer in Sekunden</label>
+                <input type="number" id="duration-input" class="input-field" placeholder="z.B. 30" value="30">
+                <button id="send-duration-button" class="btn btn-secondary w-full mt-3">Dauer senden</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Registriere den Service Worker, wenn der Browser es unterstützt
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('Service Worker registriert:', registration))
+                .catch(error => console.log('Service Worker Registrierung fehlgeschlagen:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const connectButton = document.getElementById('connect-button');
+            const statusText = document.getElementById('status-text');
+            const controlsDiv = document.getElementById('controls');
+            const grainsInput = document.getElementById('grains-input');
+            const sendGrainsButton = document.getElementById('send-grains-button');
+            const durationInput = document.getElementById('duration-input');
+            const sendDurationButton = document.getElementById('send-duration-button');
+
+            const SANDUHR_SERVICE_UUID = "4a980000-8580-425b-a2a8-33353579c6f5";
+            const ANZAHL_CHAR_UUID = "4a980001-8580-425b-a2a8-33353579c6f5";
+            const DAUER_CHAR_UUID = "4a980002-8580-425b-a2a8-33353579c6f5";
+
+            let anzahlCharacteristic = null;
+            let dauerCharacteristic = null;
+
+            connectButton.addEventListener('click', async () => {
+                try {
+                    statusText.textContent = 'Suche nach Geräten...';
+                    const device = await navigator.bluetooth.requestDevice({
+                        filters: [{ name: 'Sanduhr' }],
+                        optionalServices: [SANDUHR_SERVICE_UUID]
+                    });
+                    
+                    statusText.textContent = 'Verbinde mit Server...';
+                    const server = await device.gatt.connect();
+                    const service = await server.getPrimaryService(SANDUHR_SERVICE_UUID);
+                    anzahlCharacteristic = await service.getCharacteristic(ANZAHL_CHAR_UUID);
+                    dauerCharacteristic = await service.getCharacteristic(DAUER_CHAR_UUID);
+                    
+                    statusText.textContent = 'Verbunden!';
+                    connectButton.classList.add('hidden');
+                    controlsDiv.classList.remove('hidden');
+
+                } catch (error) {
+                    statusText.textContent = `Verbindung fehlgeschlagen`;
+                }
+            });
+            
+            async function writeIntValue(characteristic, value) {
+                if (!characteristic) return;
+                try {
+                    const buffer = new ArrayBuffer(4);
+                    new DataView(buffer).setInt32(0, value, true);
+                    await characteristic.writeValue(buffer);
+                    statusText.textContent = `Wert ${value} gesendet.`;
+                } catch (error) {
+                    statusText.textContent = `Fehler beim Senden`;
+                }
+            }
+
+            sendGrainsButton.addEventListener('click', () => writeIntValue(anzahlCharacteristic, parseInt(grainsInput.value, 10)));
+            sendDurationButton.addEventListener('click', () => writeIntValue(dauerCharacteristic, parseInt(durationInput.value, 10)));
+        });
+    </script>
+</body>
+</html>
