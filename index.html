@@ -8,47 +8,144 @@
     <!-- Metadaten für die Web-App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1e3a8a">
+    <meta name="theme-color" content="#1d4ed8">
     <link rel="manifest" href="manifest.json">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CDN wurde entfernt -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .btn { @apply px-6 py-3 rounded-lg font-semibold text-white transition-transform duration-200 ease-in-out; }
-        .btn-primary { @apply bg-blue-700 hover:bg-blue-800 active:scale-95; }
-        .btn-secondary { @apply bg-gray-500 hover:bg-gray-600 active:scale-95; }
-        .input-field { @apply mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm; }
+        /* Basis-Stile */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            background-color: #f1f5f9; /* bg-gray-100 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* Haupt-Container für die App */
+        .app-container {
+            background-color: white;
+            padding: 2rem; /* p-8 */
+            border-radius: 1rem; /* rounded-2xl */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* shadow-lg */
+            width: 100%;
+            max-width: 28rem; /* max-w-md */
+            margin: 1rem; /* mx-4 */
+        }
+
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-8 { margin-top: 2rem; }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+
+        .title {
+            font-size: 1.875rem; /* text-3xl */
+            line-height: 2.25rem;
+            font-weight: 700; /* font-bold */
+            color: #1f2937; /* text-gray-800 */
+        }
+        .status-text {
+            color: #6b7280; /* text-gray-500 */
+        }
+        .hidden { display: none; }
+
+        .controls-container {
+             display: flex;
+             flex-direction: column;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem;
+            font-weight: 500; /* font-medium */
+            color: #374151; /* text-gray-700 */
+        }
+
+        /* Eigene CSS-Klassen, die Tailwind @apply ersetzen */
+        .btn {
+            padding: 0.75rem 1.5rem; /* px-6 py-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600; /* font-semibold */
+            color: white;
+            transition: transform 0.2s ease-in-out, background-color 0.2s;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #1d4ed8; /* bg-blue-700 */
+        }
+        .btn-primary:hover {
+            background-color: #1e40af; /* hover:bg-blue-800 */
+        }
+        .btn-secondary {
+            background-color: #6b7280; /* bg-gray-500 */
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563; /* hover:bg-gray-600 */
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn:disabled {
+            background-color: #d1d5db; /* bg-gray-300 */
+            cursor: not-allowed;
+        }
+        .input-field {
+            margin-top: 0.25rem; /* mt-1 */
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem; /* px-4 py-3 */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+            font-size: 0.875rem; /* sm:text-sm */
+            line-height: 1.25rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        .input-field:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            border-color: #3b82f6; /* focus:border-blue-500 */
+            box-shadow: 0 0 0 3px rgb(59 130 246 / 0.5);
+        }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body>
 
-    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md mx-4">
+    <div class="app-container">
         <div class="text-center">
-            <h1 class="text-3xl font-bold text-gray-800">Sanduhr Steuerung</h1>
-            <p id="status-text" class="text-gray-500 mt-2">Bereit zum Verbinden</p>
+            <h1 class="title">Sanduhr Steuerung</h1>
+            <p id="status-text" class="status-text mt-2">Bereit zum Verbinden</p>
         </div>
 
         <div class="mt-8">
-            <button id="connect-button" class="btn btn-primary w-full text-lg">Mit Sanduhr verbinden</button>
+            <button id="connect-button" class="btn btn-primary text-lg">Mit Sanduhr verbinden</button>
         </div>
 
         <div id="controls" class="hidden mt-8 space-y-6">
-            <div>
-                <label for="grains-input" class="block text-sm font-medium text-gray-700">Anzahl der Körner</label>
+            <div class="input-group">
+                <label for="grains-input">Anzahl der Körner</label>
                 <input type="number" id="grains-input" class="input-field" placeholder="z.B. 60">
-                <button id="send-grains-button" class="btn btn-secondary w-full mt-3">Anzahl senden</button>
+                <button id="send-grains-button" class="btn btn-secondary mt-3">Anzahl senden</button>
             </div>
-            <div>
-                <label for="duration-input" class="block text-sm font-medium text-gray-700">Dauer in Sekunden</label>
+            <div class="input-group">
+                <label for="duration-input">Dauer in Sekunden</label>
                 <input type="number" id="duration-input" class="input-field" placeholder="z.B. 30">
-                <button id="send-duration-button" class="btn btn-secondary w-full mt-3">Dauer senden</button>
+                <button id="send-duration-button" class="btn btn-secondary mt-3">Dauer senden</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Registriere den Service Worker, wenn der Browser es unterstützt
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -72,10 +169,10 @@
 
             let anzahlCharacteristic = null;
             let dauerCharacteristic = null;
+            let bleDevice = null;
 
-            // Handler für eingehende Benachrichtigungen
             function handleAnzahlChanged(event) {
-                const value = event.target.value.getInt32(0, true); // Lese den Wert als 32-bit Integer (Little Endian)
+                const value = event.target.value.getInt32(0, true);
                 console.log(`Anzahl-Notification empfangen: ${value}`);
                 grainsInput.value = value;
             }
@@ -94,6 +191,9 @@
                         optionalServices: [SANDUHR_SERVICE_UUID]
                     });
                     
+                    bleDevice = device;
+                    bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                    
                     statusText.textContent = 'Verbinde mit Server...';
                     const server = await device.gatt.connect();
                     const service = await server.getPrimaryService(SANDUHR_SERVICE_UUID);
@@ -102,7 +202,6 @@
                     anzahlCharacteristic = await service.getCharacteristic(ANZAHL_CHAR_UUID);
                     dauerCharacteristic = await service.getCharacteristic(DAUER_CHAR_UUID);
                     
-                    // Benachrichtigungen starten und Event Listener hinzufügen
                     await anzahlCharacteristic.startNotifications();
                     anzahlCharacteristic.addEventListener('characteristicvaluechanged', handleAnzahlChanged);
                     
@@ -118,6 +217,26 @@
                 }
             });
             
+            function onDisconnected() {
+                statusText.textContent = 'Verbindung verloren. Bitte neu verbinden.';
+                connectButton.classList.remove('hidden');
+                controlsDiv.classList.remove('hidden');
+                anzahlCharacteristic = null;
+                dauerCharacteristic = null;
+                bleDevice = null;
+            }
+
+            // NEU: Event-Listener, um die Verbindung beim Schließen der Seite zu trennen.
+            window.addEventListener('beforeunload', () => {
+                if (!bleDevice) {
+                    return;
+                }
+                if (bleDevice.gatt.connected) {
+                    console.log('Seite wird geschlossen, trenne Bluetooth-Verbindung...');
+                    bleDevice.gatt.disconnect();
+                }
+            });
+            
             async function writeIntValue(characteristic, value) {
                 if (!characteristic) return;
                 try {
@@ -130,8 +249,14 @@
                 }
             }
 
-            sendGrainsButton.addEventListener('click', () => writeIntValue(anzahlCharacteristic, parseInt(grainsInput.value, 10)));
-            sendDurationButton.addEventListener('click', () => writeIntValue(dauerCharacteristic, parseInt(durationInput.value, 10)));
+            sendGrainsButton.addEventListener('click', () => {
+                const count = parseInt(grainsInput.value, 10);
+                if (!isNaN(count)) writeIntValue(anzahlCharacteristic, count);
+            });
+            sendDurationButton.addEventListener('click', () => {
+                const seconds = parseInt(durationInput.value, 10);
+                if (!isNaN(seconds)) writeIntValue(dauerCharacteristic, seconds);
+            });
         });
     </script>
 </body>
