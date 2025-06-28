@@ -1,5 +1,5 @@
-// Dieser Service Worker ist für die PWA-Funktionalität notwendig.
-// Er muss nicht viel tun, nur existieren und sich selbst registrieren.
+// This service worker is necessary for PWA functionality.
+// It doesn't have to do much, just exist and register itself.
 self.addEventListener('fetch', event => {
-  // Wir übergeben alle Netzwerkanfragen einfach weiter.
+  // We just pass all network requests on.
 });
