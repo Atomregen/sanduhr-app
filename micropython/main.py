@@ -1,6 +1,6 @@
 # #############################################################################
-# Sanduhr / Houerglas
-# Written with the help of Google Gemini
+# Sanduhr / Hourglass
+# created by using Google Gemini AI
 # #############################################################################
 
 import utime
