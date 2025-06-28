@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sanduhr Steuerung</title>
     
-    <!-- Metadaten für die Web-App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1f2937">
     <link rel="manifest" href="manifest.json">
 
-    <!-- Tailwind CDN wurde entfernt -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Basis-Stile für Dark Mode */
+        /* Basic styles for Dark Mode */
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
@@ -27,7 +25,7 @@
             margin: 0;
         }
 
-        /* Haupt-Container für die App */
+        /* Main app container */
         .app-container {
             background-color: #1f2937; /* bg-gray-800 */
             padding: 2rem;
@@ -64,7 +62,7 @@
             color: #d1d5db; /* text-gray-300 */
         }
 
-        /* Eigene CSS-Klassen für Dark Mode */
+        /* Custom CSS classes for Dark Mode */
         .btn {
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
@@ -126,7 +124,7 @@
 
     <div class="app-container">
         <div class="text-center">
-            <h1 class="title">Sanduhr Steuerung</h1>
+            <h1 id="main-title" class="title">Sanduhr Steuerung</h1>
             <p id="status-text" class="status-text mt-2">Bereit zum Verbinden</p>
         </div>
 
@@ -136,12 +134,12 @@
 
         <div id="controls" class="hidden mt-8 space-y-6">
             <div class="input-group">
-                <label for="grains-input">Anzahl der Körner</label>
+                <label id="grains-label" for="grains-input">Anzahl der Körner</label>
                 <input type="number" id="grains-input" class="input-field" placeholder="z.B. 60">
                 <button id="send-grains-button" class="btn btn-secondary mt-3">Anzahl senden</button>
             </div>
             <div class="input-group">
-                <label for="duration-input">Dauer in Sekunden</label>
+                <label id="duration-label" for="duration-input">Dauer in Sekunden</label>
                 <input type="number" id="duration-input" class="input-field" placeholder="z.B. 30">
                 <button id="send-duration-button" class="btn btn-secondary mt-3">Dauer senden</button>
             </div>
@@ -149,15 +147,80 @@
     </div>
 
     <script>
+        // This Service Worker is necessary for PWA functionality.
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(registration => console.log('Service Worker registriert:', registration))
-                    .catch(error => console.log('Service Worker Registrierung fehlgeschlagen:', error));
+                    .then(registration => console.log('Service Worker registered:', registration))
+                    .catch(error => console.log('Service Worker registration failed:', error));
             });
         }
+        
+        // Language and UI management
+        const translations = {
+            de: {
+                title: "Sanduhr Steuerung",
+                statusReady: "Bereit zum Verbinden",
+                statusSearching: "Suche nach Geräten...",
+                statusConnecting: "Verbinde mit Server...",
+                statusSubscribing: "Abonniere Benachrichtigungen...",
+                statusReading: "Lese aktuelle Werte...",
+                statusConnected: "Verbunden!",
+                statusFailed: "Verbindung fehlgeschlagen",
+                statusLost: "Verbindung verloren. Bitte neu verbinden.",
+                connectButton: "Mit Sanduhr verbinden",
+                grainsLabel: "Anzahl der Körner",
+                grainsPlaceholder: "z.B. 60",
+                sendGrainsButton: "Anzahl senden",
+                durationLabel: "Dauer in Sekunden",
+                durationPlaceholder: "z.B. 30",
+                sendDurationButton: "Dauer senden",
+                valueSent: "Wert {value} gesendet.",
+                errorSending: "Fehler beim Senden"
+            },
+            en: {
+                title: "Hourglass Control",
+                statusReady: "Ready to connect",
+                statusSearching: "Searching for devices...",
+                statusConnecting: "Connecting to server...",
+                statusSubscribing: "Subscribing to notifications...",
+                statusReading: "Reading current values...",
+                statusConnected: "Connected!",
+                statusFailed: "Connection failed",
+                statusLost: "Connection lost. Please reconnect.",
+                connectButton: "Connect to Hourglass",
+                grainsLabel: "Number of Grains",
+                grainsPlaceholder: "e.g. 60",
+                sendGrainsButton: "Send Number",
+                durationLabel: "Duration in Seconds",
+                durationPlaceholder: "e.g. 30",
+                sendDurationButton: "Send Duration",
+                valueSent: "Value {value} sent.",
+                errorSending: "Error while sending"
+            }
+        };
+
+        function setLanguage() {
+            const lang = navigator.language.startsWith('de') ? 'de' : 'en';
+            const t = translations[lang];
+
+            document.documentElement.lang = lang;
+            document.title = t.title;
+            document.getElementById('main-title').textContent = t.title;
+            document.getElementById('status-text').textContent = t.statusReady;
+            document.getElementById('connect-button').textContent = t.connectButton;
+            document.getElementById('grains-label').textContent = t.grainsLabel;
+            document.getElementById('grains-input').placeholder = t.grainsPlaceholder;
+            document.getElementById('send-grains-button').textContent = t.sendGrainsButton;
+            document.getElementById('duration-label').textContent = t.durationLabel;
+            document.getElementById('duration-input').placeholder = t.durationPlaceholder;
+            document.getElementById('send-duration-button').textContent = t.sendDurationButton;
+        }
+
 
         document.addEventListener('DOMContentLoaded', () => {
+            setLanguage(); // Set language on load
+
             const connectButton = document.getElementById('connect-button');
             const statusText = document.getElementById('status-text');
             const controlsDiv = document.getElementById('controls');
@@ -173,22 +236,25 @@
             let anzahlCharacteristic = null;
             let dauerCharacteristic = null;
             let bleDevice = null;
+            
+            const currentLang = navigator.language.startsWith('de') ? 'de' : 'en';
+            const t = translations[currentLang];
 
             function handleAnzahlChanged(event) {
                 const value = event.target.value.getInt32(0, true);
-                console.log(`Anzahl-Wert empfangen: ${value}`);
+                console.log(`Received count value: ${value}`);
                 grainsInput.value = value;
             }
 
             function handleDauerChanged(event) {
                 const value = event.target.value.getInt32(0, true);
-                console.log(`Dauer-Wert empfangen: ${value}`);
+                console.log(`Received duration value: ${value}`);
                 durationInput.value = value;
             }
 
             connectButton.addEventListener('click', async () => {
                 try {
-                    statusText.textContent = 'Suche nach Geräten...';
+                    statusText.textContent = t.statusSearching;
                     const device = await navigator.bluetooth.requestDevice({
                         filters: [{ name: 'Sanduhr' }],
                         optionalServices: [SANDUHR_SERVICE_UUID]
@@ -197,11 +263,11 @@
                     bleDevice = device;
                     bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
                     
-                    statusText.textContent = 'Verbinde mit Server...';
+                    statusText.textContent = t.statusConnecting;
                     const server = await device.gatt.connect();
                     const service = await server.getPrimaryService(SANDUHR_SERVICE_UUID);
                     
-                    statusText.textContent = 'Abonniere Benachrichtigungen...';
+                    statusText.textContent = t.statusSubscribing;
                     anzahlCharacteristic = await service.getCharacteristic(ANZAHL_CHAR_UUID);
                     dauerCharacteristic = await service.getCharacteristic(DAUER_CHAR_UUID);
                     
@@ -211,29 +277,29 @@
                     await dauerCharacteristic.startNotifications();
                     dauerCharacteristic.addEventListener('characteristicvaluechanged', handleDauerChanged);
 
-                    // KORREKTUR: Nach dem Abonnieren aktiv die aktuellen Werte einmalig auslesen.
-                    // Dies behebt die "Race Condition".
-                    statusText.textContent = 'Lese aktuelle Werte...';
+                    // CORRECTION: After subscribing, actively read the current values once.
+                    // This fixes the race condition.
+                    statusText.textContent = t.statusReading;
                     const initialAnzahlValue = await anzahlCharacteristic.readValue();
                     handleAnzahlChanged({ target: { value: initialAnzahlValue } });
 
                     const initialDauerValue = await dauerCharacteristic.readValue();
                     handleDauerChanged({ target: { value: initialDauerValue } });
                     
-                    statusText.textContent = 'Verbunden!';
+                    statusText.textContent = t.statusConnected;
                     connectButton.classList.add('hidden');
                     controlsDiv.classList.remove('hidden');
 
                 } catch (error) {
-                    statusText.textContent = `Verbindung fehlgeschlagen`;
-                    console.error('BLE Verbindungsfehler:', error);
+                    statusText.textContent = t.statusFailed;
+                    console.error('BLE Connection Error:', error);
                 }
             });
             
             function onDisconnected() {
-                statusText.textContent = 'Verbindung verloren. Bitte neu verbinden.';
+                statusText.textContent = t.statusLost;
                 connectButton.classList.remove('hidden');
-                controlsDiv.classList.remove('hidden');
+                controlsDiv.classList.add('hidden'); // Show controls to allow re-entry
                 anzahlCharacteristic = null;
                 dauerCharacteristic = null;
                 bleDevice = null;
@@ -251,9 +317,9 @@
                     const buffer = new ArrayBuffer(4);
                     new DataView(buffer).setInt32(0, value, true);
                     await characteristic.writeValue(buffer);
-                    statusText.textContent = `Wert ${value} gesendet.`;
+                    statusText.textContent = t.valueSent.replace('{value}', value);
                 } catch (error) {
-                    statusText.textContent = `Fehler beim Senden`;
+                    statusText.textContent = t.errorSending;
                 }
             }
 
