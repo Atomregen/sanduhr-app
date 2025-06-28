@@ -18,7 +18,6 @@
         .btn { @apply px-6 py-3 rounded-lg font-semibold text-white transition-transform duration-200 ease-in-out; }
         .btn-primary { @apply bg-blue-700 hover:bg-blue-800 active:scale-95; }
         .btn-secondary { @apply bg-gray-500 hover:bg-gray-600 active:scale-95; }
-        .btn:disabled { @apply bg-gray-300 cursor-not-allowed; }
         .input-field { @apply mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm; }
     </style>
 </head>
@@ -49,11 +48,8 @@
     </div>
 
     <script>
-        // Registriere den Service Worker, wenn der Browser es unterstützt
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => console.log('Service Worker registriert:', registration))
-                .catch(error => console.log('Service Worker Registrierung fehlgeschlagen:', error));
+            navigator.serviceWorker.register('/sw.js').catch(err => console.error('Service Worker registration failed:', err));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
